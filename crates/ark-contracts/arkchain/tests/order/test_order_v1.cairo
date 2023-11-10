@@ -116,6 +116,12 @@ fn test_validate_order_auction() {
 #[test]
 fn test_validate_order_collection_offer() {
     let (_, _, _, order_collection_offer) = setup();
+
+    let mut invalid_offer = order_collection_offer.clone();
+    invalid_offer.token_id = 123;
+    let invalid_order = invalid_offer.validate_order_type();
+    assert(invalid_order.unwrap() != OrderType::CollectionOffer, 'Fail for type collection offer');
+
     let validated_order = order_collection_offer.validate_order_type();
     // test for order type detection validity
     assert(validated_order.is_ok(), 'Fail to validate order type');

@@ -47,7 +47,7 @@ mod orderbook {
     use starknet::ContractAddress;
     use arkchain::order::types::{OrderTrait, OrderType, ExecutionInfo, FulfillmentInfo};
     use arkchain::order::order_v1::OrderV1;
-    use arkchain::order::database::{order_read, order_status_read};
+    use arkchain::order::database::{order_read, order_status_read, order_write};
     use arkchain::crypto::signer::SignInfo;
 
     #[storage]
@@ -163,10 +163,8 @@ mod orderbook {
                 OrderType::Auction => {
                     self._create_listing_auction(order, order_type, order_hash);
                 },
-                OrderType::Offer => { self._create_listing_offer(order, order_type, order_hash); },
-                OrderType::CollectionOffer => {
-                    self._create_listing_collection_offer(order, order_type, order_hash);
-                },
+                OrderType::Offer => { self.create_offer(order, order_type, order_hash); },
+                OrderType::CollectionOffer => { self.create_offer(order, order_type, order_hash); },
             }
         }
 
@@ -203,6 +201,7 @@ mod orderbook {
                     }
                 );
         }
+
         fn _create_listing_auction(
             ref self: ContractState, order: OrderV1, order_type: OrderType, order_hash: felt252
         ) {
@@ -216,22 +215,16 @@ mod orderbook {
                     }
                 );
         }
-        fn _create_listing_offer(
+
+        fn create_offer(
             ref self: ContractState, order: OrderV1, order_type: OrderType, order_hash: felt252
         ) {
-            self
-                .emit(
-                    OrderPlaced {
-                        order_hash: order_hash,
-                        order_version: order.get_version(),
-                        order_type: order_type,
-                        order: order,
-                    }
-                );
-        }
-        fn _create_listing_collection_offer(
-            ref self: ContractState, order: OrderV1, order_type: OrderType, order_hash: felt252
-        ) {
+            // Questions: 
+            // - What happens if I try to create an offer with a price above the listing price?
+            // - Should we handle error here? 
+            // - Should we check if the order entry already exists in db?
+            order_write(order_hash, order);
+
             self
                 .emit(
                     OrderPlaced {

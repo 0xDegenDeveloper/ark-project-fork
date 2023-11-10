@@ -130,7 +130,8 @@ impl OrderTraitOrderV1 of OrderTrait<OrderV1> {
             && (*self.end_amount).is_zero()
             && (*self.route) == RouteType::Erc20ToErc721 {
             return Result::Ok(OrderType::CollectionOffer);
-        } // Other order types are not supported.
+        }
+        // Other order types are not supported.
         Result::Err(OrderValidationError::InvalidContent)
     }
 

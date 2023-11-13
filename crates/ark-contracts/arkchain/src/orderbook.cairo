@@ -52,7 +52,9 @@ mod orderbook {
     use arkchain::order::database::{order_read, order_status_read, order_write};
     use arkchain::crypto::signer::SignInfo;
 
-    #[storage]
+    #[storage]  
+    // Order database [ressource_hash, order_data]
+    // see arkchain::order::database
     struct Storage {
         // Administrator of the orderbook.
         admin: ContractAddress,
@@ -63,8 +65,7 @@ mod orderbook {
         orders: LegacyMap<(felt252, ContractAddress, u256), felt252>,
         // (chain_id, token_address, token_id) -> (order_hash, nonce)
         auction: LegacyMap<(felt252, ContractAddress, u256), (felt252, felt252)>,
-    // Order database [ressource_hash, order_data]
-    // see arkchain::order::database
+
     }
 
     // *************************************************************************
@@ -225,6 +226,14 @@ mod orderbook {
             ref self: ContractState, order: OrderV1, order_type: OrderType, order_hash: felt252
         ) {
             order_write(order_hash, order);
+
+           let ressource_hash = order.compute_ressource_hash();
+
+            // TODO: if ressource_hash has already an order
+            // get order hash from resource hash
+            // if some() and if order is auction type
+            // get auction nonce from auction storage
+            // add offer order hash to auction_offers_nonce storage
 
             self
                 .emit(

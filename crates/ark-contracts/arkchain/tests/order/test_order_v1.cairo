@@ -79,13 +79,21 @@ fn should_returns_invalid_order_with_invalid_dates() {
     invalid_order.start_date = block_timestamp - 1;
     let result = invalid_order.validate_common_data(block_timestamp);
     assert(result.is_err(), 'result must be invalid');
-    assert(result.unwrap_err() == arkchain::order::types::OrderValidationError::StartDateInThePast, 'start date in the past');
+    assert(
+        result.unwrap_err() == arkchain::order::types::OrderValidationError::StartDateInThePast,
+        'start date in the past'
+    );
 
     let mut invalid_order = order_listing.clone();
+    invalid_order.start_date = block_timestamp - (10 * 24 * 60 * 60); // - 10 days
     invalid_order.end_date = block_timestamp + (31 * 24 * 60 * 60); // + 31 days
+    
     let result = invalid_order.validate_common_data(block_timestamp);
     assert(result.is_err(), 'result must be invalid');
-    assert(result.unwrap_err() == arkchain::order::types::OrderValidationError::EndDateTooFar, 'end date too far');
+    assert(
+        result.unwrap_err() == arkchain::order::types::OrderValidationError::EndDateTooFar,
+        'end date too far'
+    );
 }
 
 

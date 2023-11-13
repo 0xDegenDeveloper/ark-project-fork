@@ -11,78 +11,81 @@ use arkchain::order::types::RouteType;
 #[test]
 fn test_validate_common_data_with_valid_order() {
     let (order_listing, _, _, _) = setup();
-    let block_timestmap: u64 = 1699556828;
-    let result = order_listing.validate_common_data(block_timestmap);
+    let block_timestamp: u64 = 1699556828; // 09/11/2023 20:07:08
+    let result = order_listing.validate_common_data(block_timestamp);
     assert(result.is_ok(), 'Invalid result');
 }
 
 #[test]
 fn should_returns_invalid_order_with_zero_quantity() {
     let (order_listing, _, _, _) = setup();
-    let block_timestmap: u64 = 1699556828;
+    let block_timestamp: u64 = 1699556828;
 
     let mut invalid_order = order_listing.clone();
     invalid_order.quantity = 0;
-    let result = invalid_order.validate_common_data(block_timestmap);
+    let result = invalid_order.validate_common_data(block_timestamp);
     assert(!result.is_ok(), 'zero quantity');
 }
 
 #[test]
 fn should_returns_invalid_order_with_zero_salt() {
     let (order_listing, _, _, _) = setup();
-    let block_timestmap: u64 = 1699556828;
+    let block_timestamp: u64 = 1699556828;
 
     let mut invalid_order = order_listing.clone();
     invalid_order.salt = 0;
-    let result = invalid_order.validate_common_data(block_timestmap);
+    let result = invalid_order.validate_common_data(block_timestamp);
     assert(!result.is_ok(), 'zero salt');
 }
 
 #[test]
 fn should_returns_invalid_order_with_zero_token_id() {
     let (order_listing, _, _, _) = setup();
-    let block_timestmap: u64 = 1699556828;
+    let block_timestamp: u64 = 1699556828;
 
     let mut invalid_order = order_listing.clone();
     invalid_order.token_id = 0;
-    let result = invalid_order.validate_common_data(block_timestmap);
+    let result = invalid_order.validate_common_data(block_timestamp);
     assert(!result.is_ok(), 'zero token id');
 }
 
 #[test]
 fn should_returns_invalid_order_with_invalid_token_address() {
     let (order_listing, _, _, _) = setup();
-    let block_timestmap: u64 = 1699556828;
+    let block_timestamp: u64 = 1699556828;
 
     let mut invalid_order = order_listing.clone();
     invalid_order.token_address = 0.try_into().unwrap();
-    let result = invalid_order.validate_common_data(block_timestmap);
+    let result = invalid_order.validate_common_data(block_timestamp);
     assert(!result.is_ok(), 'invalid token address');
 }
 
 #[test]
 fn should_returns_invalid_order_with_invalid_dates() {
     let (order_listing, _, _, _) = setup();
-    let block_timestmap: u64 = 1699556828;
+    let block_timestamp: u64 = 1699556828; // 09/11/2023 20:07:08
 
     let mut invalid_order = order_listing.clone();
     invalid_order.end_date = 0;
-    let result = invalid_order.validate_common_data(block_timestmap);
+    let result = invalid_order.validate_common_data(block_timestamp);
     assert(!result.is_ok(), 'zero end date');
 
     let mut invalid_order = order_listing.clone();
     invalid_order.end_date = invalid_order.start_date;
-    let result = invalid_order.validate_common_data(block_timestmap);
+    let result = invalid_order.validate_common_data(block_timestamp);
     assert(!result.is_ok(), 'start date = end date');
 
     let mut invalid_order = order_listing.clone();
-    let result = invalid_order.validate_common_data(1699643230);
-    assert(!result.is_ok(), 'past start date');
+    invalid_order.start_date = block_timestamp - 1;
+    let result = invalid_order.validate_common_data(block_timestamp);
+    assert(result.is_err(), 'result must be invalid');
+    assert(result.unwrap_err() == arkchain::order::types::OrderValidationError::StartDateInThePast, 'start date in the past');
 
     let mut invalid_order = order_listing.clone();
-    invalid_order.end_date = 1731225255;
-    let result = invalid_order.validate_common_data(block_timestmap);
-    assert(!result.is_ok(), 'end date too far');
+    invalid_order.end_date = block_timestamp + (31 * 24 * 60 * 60); // + 31 days
+    let result = invalid_order.validate_common_data(block_timestamp);
+    assert(result.is_err(), 'result must be invalid');
+    assert(result.unwrap_err() == arkchain::order::types::OrderValidationError::EndDateTooFar, 'end date too far');
 }
 
 

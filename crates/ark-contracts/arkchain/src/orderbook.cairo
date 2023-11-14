@@ -83,6 +83,7 @@ mod orderbook_errors {
     const ORDER_ALREADY_EXEC: felt252 = 'OB: order already executed';
     const ORDER_NOT_FOUND: felt252 = 'OB: order not found';
     const ORDER_FULFILLED: felt252 = 'OB: order fulfilled';
+    const OFFER_ALREADY_EXISTS: felt252 = 'OB: offer already exists';
 }
 
 /// StarkNet smart contract module for an order book.
@@ -380,7 +381,7 @@ mod orderbook {
             let (auction_order_hash, auction_end_date) = self.auctions.read(token_hash);
             if auction_order_hash.is_non_zero() {
                 let auction_order = self.auction_offers.read(order_hash);
-                assert(auction_order.is_zero(), 'already existing auction offer');
+                assert(auction_order.is_zero(), orderbook_errors::OFFER_ALREADY_EXISTS);
                 self.auction_offers.write(order_hash, auction_order_hash);
             }
 

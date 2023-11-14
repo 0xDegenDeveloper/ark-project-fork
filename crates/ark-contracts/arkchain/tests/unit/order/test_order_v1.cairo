@@ -7,6 +7,11 @@ use arkchain::order::order_v1::OrderTraitOrderV1;
 use arkchain::order::types::OrderType;
 use snforge_std::PrintTrait;
 use arkchain::order::types::RouteType;
+use super::super::super::setup::order;
+
+// *********************************************************
+// validate_common_data
+// *********************************************************
 
 #[test]
 fn test_validate_common_data_with_valid_order() {
@@ -93,7 +98,6 @@ fn should_returns_invalid_order_with_invalid_dates() {
         'end date too far'
     );
 }
-
 
 #[test]
 fn test_validate_order_listing() {

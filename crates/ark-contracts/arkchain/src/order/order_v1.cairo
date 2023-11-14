@@ -69,6 +69,11 @@ impl OrderTraitOrderV1 of OrderTrait<OrderV1> {
             }
         }
 
+        // Salt must be non-zero.
+        if (*self.salt).is_zero() {
+            return Result::Err(OrderValidationError::InvalidSalt);
+        }
+
         let end_date = *self.end_date;
 
         if end_date < block_timestamp {
@@ -77,7 +82,7 @@ impl OrderTraitOrderV1 of OrderTrait<OrderV1> {
 
         // End date -> block_ts + 30 days.
         let max_end_date = *self.start_date + (30 * 24 * 60 * 60);
-        if end_date >= max_end_date {
+        if end_date > max_end_date {
             return Result::Err(OrderValidationError::EndDateTooFar);
         }
 
@@ -135,14 +140,12 @@ impl OrderTraitOrderV1 of OrderTrait<OrderV1> {
     }
 
     fn compute_token_hash(self: @OrderV1) -> felt252 {
+        assert(OptionTrait::is_some(self.token_id), 'Token ID expected');
+
         let mut buf: Array<felt252> = array![];
-        match self.token_id {
-            Option::Some(token_id) => {
-                buf.append((*token_id.low).into());
-                buf.append((*token_id.high).into());
-            },
-            Option::None => {}
-        }
+        let token_id = (*self.token_id).unwrap();
+        buf.append(token_id.low.into());
+        buf.append(token_id.high.into());
         buf.append((*self.token_address).into());
         buf.append(*self.token_chain_id);
         starknet_keccak(buf.span())

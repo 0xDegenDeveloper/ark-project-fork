@@ -1,5 +1,17 @@
-mod order {
-    mod test_order_v1;
+use arkchain::order::order_v1::OrderV1;
+use arkchain::order::types::RouteType;
+
+mod integration {
+    mod test_create_order_v1;
 }
 
-mod test_orderbook;
+mod unit {
+    mod order {
+        mod test_order_v1;
+    }
+    mod test_orderbook;
+}
+
+mod setup {
+    mod order;
+}

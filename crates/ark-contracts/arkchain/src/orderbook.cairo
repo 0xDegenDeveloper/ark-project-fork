@@ -173,7 +173,7 @@ mod orderbook {
                 },
                 OrderType::Offer => { self._create_offer(order, order_type, order_hash); },
                 OrderType::CollectionOffer => {
-                    self._create_offer(order, order_type, order_hash);
+                    self._create_collection_offer(order, order_type, order_hash);
                 },
             }
         }
@@ -215,6 +215,21 @@ mod orderbook {
         fn _create_listing_auction(
             ref self: ContractState, order: OrderV1, order_type: OrderType, order_hash: felt252
         ) {
+            self
+                .emit(
+                    OrderPlaced {
+                        order_hash: order_hash,
+                        order_version: order.get_version(),
+                        order_type: order_type,
+                        order: order,
+                    }
+                );
+        }
+
+        fn _create_collection_offer(
+            ref self: ContractState, order: OrderV1, order_type: OrderType, order_hash: felt252
+        ) {
+            order_write(order_hash, order);
             self
                 .emit(
                     OrderPlaced {

@@ -127,7 +127,7 @@ fn test_validate_order_collection_offer() {
     let (_, _, _, order_collection_offer) = setup();
 
     let mut invalid_offer = order_collection_offer.clone();
-    invalid_offer.token_id = 123;
+    invalid_offer.token_id = Option::Some(123);
     let invalid_order = invalid_offer.validate_order_type();
     assert(invalid_order.unwrap() != OrderType::CollectionOffer, 'Fail for type collection offer');
 
@@ -157,7 +157,7 @@ fn setup() -> (OrderV1, OrderV1, OrderV1, OrderV1,) {
         token_address: 0x01435498bf393da86b4733b9264a86b58a42b31f8d8b8ba309593e5c17847672
             .try_into()
             .unwrap(),
-        token_id: 10,
+        token_id: Option::Some(10),
         quantity: 1,
         start_amount: 600000000000000000,
         end_amount: 0,
@@ -180,7 +180,7 @@ fn setup() -> (OrderV1, OrderV1, OrderV1, OrderV1,) {
         token_address: 0x01435498bf393da86b4733b9264a86b58a42b31f8d8b8ba309593e5c17847672
             .try_into()
             .unwrap(),
-        token_id: 23,
+        token_id: Option::Some(23),
         quantity: 1,
         start_amount: 600000000000000000,
         end_amount: 0,
@@ -203,7 +203,7 @@ fn setup() -> (OrderV1, OrderV1, OrderV1, OrderV1,) {
         token_address: 0x01435498bf393da86b4733b9264a86b58a42b31f8d8b8ba309593e5c17847672
             .try_into()
             .unwrap(),
-        token_id: 10,
+        token_id: Option::Some(10),
         quantity: 1,
         start_amount: 600000000000000000,
         end_amount: 600000000000000000,
@@ -227,7 +227,7 @@ fn setup() -> (OrderV1, OrderV1, OrderV1, OrderV1,) {
         token_address: 0x01435498bf393da86b4733b9264a86b58a42b31f8d8b8ba309593e5c17847672
             .try_into()
             .unwrap(),
-        token_id: 0,
+        token_id: Option::None,
         quantity: 1,
         start_amount: 600000000000000000,
         end_amount: 0,

@@ -31,7 +31,7 @@ struct OrderV1 {
     // The token contract address.
     token_address: ContractAddress,
     // The token id.
-    token_id: u256,
+    token_id: Option<u256>,
     // The quantity of the token_id to be offerred (1 for NFTs).
     quantity: u256,
     // in wei. --> 10 | 10 | 10 |
@@ -101,46 +101,53 @@ impl OrderTraitOrderV1 of OrderTrait<OrderV1> {
     }
 
     fn validate_order_type(self: @OrderV1) -> Result<OrderType, OrderValidationError> {
-        // Listing order.
-        if (*self.token_id) > 0
-            && (*self.start_amount) > 0
-            && (*self.end_amount).is_zero()
-            && (*self.route) == RouteType::Erc721ToErc20 {
-            return Result::Ok(OrderType::Listing);
+        if self.token_id.is_some() {
+            // Listing order.
+            if (*self.start_amount) > 0
+                && (*self.end_amount).is_zero()
+                && (*self.route) == RouteType::Erc721ToErc20 {
+                return Result::Ok(OrderType::Listing);
+            }
+
+            // Offer order.
+            if (*self.start_amount) > 0
+                && (*self.end_amount).is_zero()
+                && (*self.route) == RouteType::Erc20ToErc721 {
+                return Result::Ok(OrderType::Offer);
+            }
+            // Auction order.
+            if (*self.start_amount) > 0
+                && (*self.start_amount) >= (*self.end_amount)
+                && (*self.route) == RouteType::Erc721ToErc20 {
+                return Result::Ok(OrderType::Auction);
+            }
+        } else {
+            // Collection Offer order.
+            if (*self.start_amount) > 0
+                && (*self.end_amount).is_zero()
+                && (*self.route) == RouteType::Erc20ToErc721 {
+                return Result::Ok(OrderType::CollectionOffer);
+            }
         }
-        // Offer order.
-        if (*self.token_id) > 0
-            && (*self.start_amount) > 0
-            && (*self.end_amount).is_zero()
-            && (*self.route) == RouteType::Erc20ToErc721 {
-            return Result::Ok(OrderType::Offer);
-        }
-        // Auction order.
-        if (*self.token_id) > 0
-            && (*self.start_amount) > 0
-            && (*self.start_amount) >= (*self.end_amount)
-            && (*self.route) == RouteType::Erc721ToErc20 {
-            return Result::Ok(OrderType::Auction);
-        }
-        // Collection Offer order.
-        if (*self.token_id).is_zero()
-            && (*self.start_amount) > 0
-            && (*self.end_amount).is_zero()
-            && (*self.route) == RouteType::Erc20ToErc721 {
-            return Result::Ok(OrderType::CollectionOffer);
-        }
+
         // Other order types are not supported.
         Result::Err(OrderValidationError::InvalidContent)
     }
 
     fn compute_ressource_hash(self: @OrderV1) -> felt252 {
         let mut buf = array![];
-        let (high, low) = keccak::u128_split(*self.token_id.low);
-        buf.append(high.into());
-        buf.append(low.into());
-        let (high, low) = keccak::u128_split(*self.token_id.high);
-        buf.append(high.into());
-        buf.append(low.into());
+        match self.token_id {
+            Option::Some(token_id) => {
+                let (high, low) = keccak::u128_split(*token_id.low);
+                buf.append(high.into());
+                buf.append(low.into());
+                let (high, low) = keccak::u128_split(*token_id.high);
+                buf.append(high.into());
+                buf.append(low.into());
+            },
+            Option::None => {}
+        }
+
         let felt_token_address = contract_address_to_felt252(*self.token_address);
         buf.append(felt_token_address);
         buf.append(*self.token_chain_id);

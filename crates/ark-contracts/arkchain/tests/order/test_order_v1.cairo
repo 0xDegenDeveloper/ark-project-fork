@@ -39,17 +39,6 @@ fn should_returns_invalid_order_with_zero_salt() {
 }
 
 #[test]
-fn should_returns_invalid_order_with_zero_token_id() {
-    let (order_listing, _, _, _) = setup();
-    let block_timestamp: u64 = 1699556828;
-
-    let mut invalid_order = order_listing.clone();
-    invalid_order.token_id = 0;
-    let result = invalid_order.validate_common_data(block_timestamp);
-    assert(!result.is_ok(), 'zero token id');
-}
-
-#[test]
 fn should_returns_invalid_order_with_invalid_token_address() {
     let (order_listing, _, _, _) = setup();
     let block_timestamp: u64 = 1699556828;

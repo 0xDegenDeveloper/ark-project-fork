@@ -172,8 +172,10 @@ mod orderbook {
                 OrderType::Auction => {
                     self._create_listing_auction(order, order_type, order_hash);
                 },
-                OrderType::Offer => { self.create_offer(order, order_type, order_hash); },
-                OrderType::CollectionOffer => { self.create_offer(order, order_type, order_hash); },
+                OrderType::Offer => { self._create_offer(order, order_type, order_hash); },
+                OrderType::CollectionOffer => {
+                    self._create_offer(order, order_type, order_hash);
+                },
             }
         }
 
@@ -225,7 +227,7 @@ mod orderbook {
                 );
         }
 
-        fn create_offer(
+        fn _create_offer(
             ref self: ContractState, order: OrderV1, order_type: OrderType, order_hash: felt252
         ) {
             // Manage auction offer

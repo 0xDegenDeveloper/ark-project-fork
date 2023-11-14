@@ -91,7 +91,6 @@ impl OrderTraitOrderV1 of OrderTrait<OrderV1> {
 
         if (*self.offerer).is_zero()
             || (*self.token_address).is_zero()
-            || (*self.token_id).is_zero()
             || (*self.start_amount).is_zero()
             || (*self.salt).is_zero()
             || (*self.quantity).is_zero() {

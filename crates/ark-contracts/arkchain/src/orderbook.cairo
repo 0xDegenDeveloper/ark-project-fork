@@ -42,6 +42,7 @@ mod orderbook_errors {
 
 #[starknet::contract]
 mod orderbook {
+    use core::zeroable::Zeroable;
     use core::option::OptionTrait;
     use core::starknet::event::EventEmitter;
     use core::traits::Into;
@@ -52,7 +53,7 @@ mod orderbook {
     use arkchain::order::database::{order_read, order_status_read, order_write};
     use arkchain::crypto::signer::SignInfo;
 
-    #[storage]  
+    #[storage]
     // Order database [ressource_hash, order_data]
     // see arkchain::order::database
     struct Storage {
@@ -63,9 +64,11 @@ mod orderbook {
         brokers: LegacyMap<felt252, felt252>,
         // (chain_id, token_address, token_id) -> order_hash
         orders: LegacyMap<(felt252, ContractAddress, u256), felt252>,
-        // (chain_id, token_address, token_id) -> (order_hash, nonce)
-        auction: LegacyMap<(felt252, ContractAddress, u256), (felt252, felt252)>,
-
+        // token_hash(chain_id, token_address, token_id): felt252 -> (order_hash, end_date)
+        auctions: LegacyMap<felt252, (felt252, felt252)>,
+        // storage for auction offers to match Auction order
+        // (auction offer order_hash) -> auction listing order_hash
+        auction_offers: LegacyMap<felt252, felt252>,
     }
 
     // *************************************************************************
@@ -225,16 +228,14 @@ mod orderbook {
         fn create_offer(
             ref self: ContractState, order: OrderV1, order_type: OrderType, order_hash: felt252
         ) {
+            let ressource_hash = order.compute_ressource_hash();
+            let (auction_order_hash, auction_end_date) = self.auctions.read(ressource_hash);
+            if auction_order_hash.is_non_zero() {
+                let auction_order = self.auction_offers.read(order_hash);
+                assert(auction_order.is_zero(), 'already existing auction offer');
+                self.auction_offers.write(order_hash, auction_order_hash);
+            }
             order_write(order_hash, order);
-
-           let ressource_hash = order.compute_ressource_hash();
-
-            // TODO: if ressource_hash has already an order
-            // get order hash from resource hash
-            // if some() and if order is auction type
-            // get auction nonce from auction storage
-            // add offer order hash to auction_offers_nonce storage
-
             self
                 .emit(
                     OrderPlaced {

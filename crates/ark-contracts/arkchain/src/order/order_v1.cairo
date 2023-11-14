@@ -134,22 +134,16 @@ impl OrderTraitOrderV1 of OrderTrait<OrderV1> {
         Result::Err(OrderValidationError::InvalidContent)
     }
 
-    fn compute_ressource_hash(self: @OrderV1) -> felt252 {
-        let mut buf = array![];
+    fn compute_token_hash(self: @OrderV1) -> felt252 {
+        let mut buf: Array<felt252> = array![];
         match self.token_id {
             Option::Some(token_id) => {
-                let (high, low) = keccak::u128_split(*token_id.low);
-                buf.append(high.into());
-                buf.append(low.into());
-                let (high, low) = keccak::u128_split(*token_id.high);
-                buf.append(high.into());
-                buf.append(low.into());
+                buf.append((*token_id.low).into());
+                buf.append((*token_id.high).into());
             },
             Option::None => {}
         }
-
-        let felt_token_address = contract_address_to_felt252(*self.token_address);
-        buf.append(felt_token_address);
+        buf.append((*self.token_address).into());
         buf.append(*self.token_chain_id);
         starknet_keccak(buf.span())
     }

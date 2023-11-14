@@ -37,7 +37,7 @@ trait OrderTrait<T, +Serde<T>, +Drop<T>> {
     /// Every field of the order that must be signed
     /// must be considered in the computation of this hash.
     fn compute_order_hash(self: @T) -> felt252;
-    fn compute_ressource_hash(self: @T) -> felt252;
+    fn compute_token_hash(self: @T) -> felt252;
 }
 
 /// Status of an order, that may be defined from

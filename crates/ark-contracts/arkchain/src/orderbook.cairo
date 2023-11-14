@@ -164,7 +164,6 @@ mod orderbook {
             let order_read_option = order_read::<OrderV1>(order_hash);
             assert(order_read_option.is_some(), orderbook_errors::ORDER_ALREADY_EXISTS);
 
-            let ressource_hash = order.compute_ressource_hash();
             match order_type {
                 OrderType::Listing => {
                     self._create_listing_order(order, order_type, order_hash);
@@ -231,8 +230,8 @@ mod orderbook {
             ref self: ContractState, order: OrderV1, order_type: OrderType, order_hash: felt252
         ) {
             // Manage auction offer
-            let ressource_hash = order.compute_ressource_hash();
-            let (auction_order_hash, auction_end_date) = self.auctions.read(ressource_hash);
+            let token_hash = order.compute_token_hash();
+            let (auction_order_hash, auction_end_date) = self.auctions.read(token_hash);
             if auction_order_hash.is_non_zero() {
                 let auction_order = self.auction_offers.read(order_hash);
                 assert(auction_order.is_zero(), 'already existing auction offer');
